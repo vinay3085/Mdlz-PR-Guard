@@ -1,0 +1,39 @@
+# Databricks Asset Bundle configuration
+# Requires: Databricks CLI >= 0.210
+#
+# Usage:
+#   databricks bundle validate          # dry-run
+#   databricks bundle deploy            # deploy to dev target
+#   databricks bundle deploy -t prod    # deploy to prod target
+#   databricks apps deploy mdlz-pr-guard --source-code-path .
+
+bundle:
+  name: mdlz-pr-guard
+
+variables:
+  databricks_host:
+    description: Databricks workspace host (e.g. adb-1234567890.18.azuredatabricks.net)
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://${var.databricks_host}
+
+  prod:
+    mode: production
+    workspace:
+      host: https://${var.databricks_host}
+
+resources:
+  apps:
+    mdlz-pr-guard:
+      name: mdlz-pr-guard
+      description: >-
+        AI-Powered PR Security & Org Policy Scanner.
+        Listens for GitHub pull_request webhooks and posts structured
+        change summaries and optional security findings back to the PR.
+      source_code_path: .
+      # Environment variables / secrets are managed in the Databricks UI
+      # or via `databricks apps update` — not in this file.

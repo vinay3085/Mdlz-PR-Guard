@@ -1,0 +1,20 @@
+## Enabled Analyses
+{enabled_analyses}
+
+## PR Diff
+```diff
+{diff}
+```
+
+## Static Analysis Findings
+{static_findings}
+
+## Org Policy Violations
+{policy_violations}
+
+Instructions:
+- Always populate "overall_summary" (what does this PR do?) and "file_changes" (one entry per changed file).
+- Add "findings" and set "overall_risk" ONLY if "Security Analysis (LLM)" is listed as ENABLED above.
+- When static findings or policy violations are provided, incorporate them into your findings where relevant — do not repeat issues without adding context.
+
+Return ONLY the JSON object — no extra text.

@@ -1,0 +1,27 @@
+# Databricks Apps configuration
+# Deploy with: databricks apps deploy mdlz-pr-guard --source-code-path .
+#
+# The app is reachable at:
+#   https://mdlz-pr-guard-<workspace-id>.databricksapps.com
+# Use /webhook as the GitHub App webhook URL.
+
+command:
+  - uvicorn
+  - app.main:app
+  - --host
+  - 0.0.0.0
+  - --port
+  - 8000
+
+# Environment variables are configured in the Databricks UI or via the CLI
+# (Apps → <app-name> → Environment → Edit environment).
+# Do NOT add secrets here — this file is committed to git.
+#
+# Required environment variables to set in the Databricks Apps UI:
+#   GITHUB_APP_ID
+#   GITHUB_WEBHOOK_SECRET
+#   GITHUB_PRIVATE_KEY_CONTENT   (full PEM content, single line with \n escapes)
+#   LLM_PROVIDER=databricks
+#   DATABRICKS_HOST              (e.g. adb-1234567890.18.azuredatabricks.net)
+#   DATABRICKS_TOKEN             (Databricks Personal Access Token)
+#   LLM_MODEL=databricks-meta-llama-3-3-70b-instruct

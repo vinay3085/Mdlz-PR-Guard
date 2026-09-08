@@ -1,0 +1,47 @@
+# Secrets — never commit these
+.env
+*.pem
+certs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.iml
+ 
+# Testing & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Tools (downloaded binaries)
+.tools/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code — local project settings (machine-specific)
+.claude/
+CLAUDE.md
+CLAUDE_PROJECT.md
