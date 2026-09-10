@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # Prompts
     prompts_dir: str = Field("./prompts", alias="PROMPTS_DIR")
 
+    # Databricks integration
+    feature_databricks_fetch: bool = Field(False, alias="FEATURE_DATABRICKS_FETCH")
+    databricks_workspace_path: str = Field("/", alias="DATABRICKS_WORKSPACE_PATH")
+
     # ── Feature flags ─────────────────────────────────────────────────────────
     # PR summary (what changed, grouped by file) is always on.
     # All security / policy features are opt-in via environment variables.

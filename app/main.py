@@ -31,6 +31,7 @@ from app.services.static_analysis_service import (
     GitleaksAnalyzer,
     SemgrepAnalyzer,
 )
+from app.services.databricks_analyzer import DatabricksWorkspaceAnalyzer
 from app.utils.signature_verifier import verify_webhook_signature
 
 logging.basicConfig(
@@ -176,6 +177,9 @@ def _build_handler(request: Request) -> WebhookHandler:
         analyzers.append(SemgrepAnalyzer())
     if features.secret_scanning:
         analyzers.append(GitleaksAnalyzer())
+    # If Databricks workspace fetch is enabled, include the workspace analyzer
+    if settings.feature_databricks_fetch:
+        analyzers.append(DatabricksWorkspaceAnalyzer())
 
     return WebhookHandler(
         github_service=github_service,

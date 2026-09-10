@@ -41,7 +41,7 @@ class GitHubAuthService:
         # exp is anchored to iat so the window never exceeds GitHub's 10-minute hard limit.
         # Using now + 600 with iat = now - 60 would produce an 11-minute window → 401.
         exp = iat + _JWT_WINDOW_SECONDS
-        payload = {"iat": iat, "exp": exp, "iss": str(self._app_id)}
+        payload = {"iat": iat, "exp": exp, "iss": self._app_id}
         logger.debug(
             "Minting JWT: app_id=%d  iat=%d  exp=%d  window=%ds",
             self._app_id, iat, exp, exp - iat,
@@ -66,11 +66,14 @@ class GitHubAuthService:
             )
 
         if response.status_code == 401:
+            logger.error(
+                "GitHub authentication failed: status=%s response=%s",
+                response.status_code,
+                response.text,
+            )
             raise ValueError(
                 f"GitHub App authentication failed for App ID {self._app_id}. "
-                "Verify that GITHUB_APP_ID in .env matches your GitHub App's numeric ID "
-                "and that GITHUB_PRIVATE_KEY_PATH points to the private key downloaded "
-                "from that exact app (Settings → Private keys)."
+                f"GitHub response: {response.text}"
             )
         response.raise_for_status()
         app_name = response.json().get("name", "unknown")
