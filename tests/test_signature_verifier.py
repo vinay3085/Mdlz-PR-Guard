@@ -6,7 +6,9 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
+import app.main as main_module
 from app.main import app
+from app.services.github_auth import GitHubAuthService
 
 SECRET = "super-secret-webhook-key-12345"
 
@@ -24,17 +26,36 @@ def client(monkeypatch):
     class _FakeSettings:
         github_app_id = 123456
         github_private_key_path = "./certs/private_key.pem"
+        github_private_key_content = "-----BEGIN PRIVATE KEY-----\nplaceholder\n-----END PRIVATE KEY-----"
         github_webhook_secret = SECRET
         llm_provider = "anthropic"
         anthropic_api_key = "sk-test"
+        openai_api_key = ""
         llm_model = "claude-opus-5"
+        databricks_host = ""
+        databricks_token = ""
         app_host = "0.0.0.0"
         app_port = 8000
         log_level = "INFO"
         database_url = "sqlite://"  # in-memory for tests
         prompts_dir = "./prompts"
+        feature_databricks_fetch = False
+        databricks_workspace_path = "/"
+        feature_static_analysis = False
+        feature_secret_scanning = False
+        feature_policy_check = False
+        feature_llm_findings = False
+        langsmith_tracing = False
+        langsmith_api_key = ""
+        langsmith_project = "mdlz-pr-guard"
 
-    monkeypatch.setattr(config, "get_settings", lambda: _FakeSettings())
+    fake_settings = lambda: _FakeSettings()
+    fake_settings.cache_clear = lambda: None
+    async def _fake_validate_credentials(self):
+        return None
+    monkeypatch.setattr(config, "get_settings", fake_settings)
+    monkeypatch.setattr(main_module, "get_settings", fake_settings)
+    monkeypatch.setattr(GitHubAuthService, "validate_credentials", _fake_validate_credentials)
     with TestClient(app) as c:
         yield c
 

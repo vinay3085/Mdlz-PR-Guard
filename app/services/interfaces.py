@@ -6,7 +6,7 @@ dependency inversion (DIP) — callers depend on these abstractions, not
 on concrete implementations.
 """
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 
@@ -51,14 +51,14 @@ class FileChangeSummary:
 
 @dataclass
 class LLMReviewResult:
-    summary: str                          # overall 2-3 sentence summary
-    overall_risk: str                     # "pass" | "warn" | "block"
-    findings: List[LLMFinding]            # empty when FEATURE_LLM_FINDINGS=false
-    file_changes: List[FileChangeSummary] # always populated
-    input_tokens: int
-    output_tokens: int
-    cached_tokens: int
-    model: str
+    summary: str = ""                    # overall 2-3 sentence summary
+    overall_risk: str = "pass"           # "pass" | "warn" | "block"
+    findings: List[LLMFinding] = field(default_factory=list)    # empty when FEATURE_LLM_FINDINGS=false
+    file_changes: List[FileChangeSummary] = field(default_factory=list)  # always populated
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cached_tokens: int = 0
+    model: str = ""
 
 
 @dataclass
@@ -102,6 +102,8 @@ class ILLMReviewer(ABC):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> LLMReviewResult:
         ...
 
