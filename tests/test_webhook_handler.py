@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.handlers.webhook_handler import WebhookHandler
-from app.services.interfaces import LLMReviewResult, StaticFinding, PolicyViolation
+from app.services.interfaces import FeatureSet, LLMReviewResult, StaticFinding, PolicyViolation
 
 
 def _make_handler(
@@ -63,6 +63,12 @@ def _make_handler(
         findings_repo=findings_repo,
         usage_ledger_repo=ledger_repo,
         installation_repo=installation_repo,
+        features=FeatureSet(
+            static_analysis=True,
+            secret_scanning=True,
+            policy_check=True,
+            llm_findings=True,
+        ),
     )
 
 
@@ -127,6 +133,17 @@ async def test_handle_installation_upsert():
     handler._installations.upsert.assert_called_once_with(
         installation_id=777, org="myorg", account_login="myorg", status="active"
     )
+
+
+@pytest.mark.asyncio
+async def test_handle_pull_request_passes_pr_metadata_to_llm():
+    handler = _make_handler()
+
+    await handler.handle_pull_request(SAMPLE_PR_PAYLOAD)
+
+    kwargs = handler._llm.review.await_args.kwargs
+    assert kwargs["pr_title"] == "MDLZ-123 add login feature"
+    assert kwargs["pr_body"] == "This adds OAuth2 login. " * 5
 
 
 @pytest.mark.asyncio

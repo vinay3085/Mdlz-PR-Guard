@@ -135,7 +135,12 @@ class WebhookHandler:
             # ── Step 4: LLM review (always runs; adapts based on features) ─
             llm_start = time.monotonic()
             llm_result = await self._llm.review(
-                diff, static_findings, policy_violations, self._features
+                diff,
+                static_findings,
+                policy_violations,
+                self._features,
+                pr_title=pr.get("title", "") or "",
+                pr_body=pr.get("body", "") or "",
             )
             llm_latency_ms = int((time.monotonic() - llm_start) * 1000)
             logger.info(

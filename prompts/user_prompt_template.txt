@@ -1,6 +1,11 @@
 ## Enabled Analyses
 {enabled_analyses}
 
+## PR Metadata
+- Title: {pr_title}
+- Description:
+{pr_description}
+
 ## PR Diff
 ```diff
 {diff}
@@ -16,5 +21,6 @@ Instructions:
 - Always populate "overall_summary" (what does this PR do?) and "file_changes" (one entry per changed file).
 - Add "findings" and set "overall_risk" ONLY if "Security Analysis (LLM)" is listed as ENABLED above.
 - When static findings or policy violations are provided, incorporate them into your findings where relevant — do not repeat issues without adding context.
+- Use the PR title and description to understand intent and business context before summarizing or assessing risk.
 
 Return ONLY the JSON object — no extra text.

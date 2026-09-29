@@ -100,7 +100,14 @@ class AnthropicLLMReviewer(ILLMReviewer):
     """
 
     def __init__(self, settings: Settings) -> None:
-        self._client = wrap_anthropic(anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key))
+        client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        try:
+            self._client = wrap_anthropic(client)
+        except AttributeError:
+            logger.warning(
+                "Anthropic SDK compatibility issue detected; falling back to raw AsyncAnthropic client."
+            )
+            self._client = client
         self._model = settings.llm_model
         self._prompts_dir = Path(settings.prompts_dir)
 
@@ -113,6 +120,8 @@ class AnthropicLLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> str:
         template = self._load_prompt("user_prompt_template.txt")
 
@@ -127,12 +136,19 @@ class AnthropicLLMReviewer(ILLMReviewer):
             for v in policy_violations
         ) or "None"
 
+        pr_title = (pr_title or "").strip() or "N/A"
+        pr_description = (pr_body or "").strip() or "No PR description provided."
+        if len(pr_description) > 2000:
+            pr_description = pr_description[:2000] + "\n\n[... description truncated ...]"
+
         truncated_diff = diff[:_MAX_DIFF_CHARS]
         if len(diff) > _MAX_DIFF_CHARS:
             truncated_diff += f"\n\n[... diff truncated at {_MAX_DIFF_CHARS} chars ...]"
 
         return template.format(
             enabled_analyses=_build_enabled_analyses(features, static_findings, policy_violations),
+            pr_title=pr_title,
+            pr_description=pr_description,
             diff=truncated_diff,
             static_findings=static_summary,
             policy_violations=policy_summary,
@@ -145,9 +161,18 @@ class AnthropicLLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> LLMReviewResult:
         system_prompt = self._load_prompt("system_prompt.txt")
-        user_prompt = self._build_user_prompt(diff, static_findings, policy_violations, features)
+        user_prompt = self._build_user_prompt(
+            diff,
+            static_findings,
+            policy_violations,
+            features,
+            pr_title=pr_title,
+            pr_body=pr_body,
+        )
 
         logger.info("Calling %s for LLM review (features: %s)", self._model, vars(features))
 
@@ -211,6 +236,8 @@ class OpenAILLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> str:
         template = self._load_prompt("user_prompt_template.txt")
 
@@ -225,12 +252,19 @@ class OpenAILLMReviewer(ILLMReviewer):
             for v in policy_violations
         ) or "None"
 
+        pr_title = (pr_title or "").strip() or "N/A"
+        pr_description = (pr_body or "").strip() or "No PR description provided."
+        if len(pr_description) > 2000:
+            pr_description = pr_description[:2000] + "\n\n[... description truncated ...]"
+
         truncated_diff = diff[:_MAX_DIFF_CHARS]
         if len(diff) > _MAX_DIFF_CHARS:
             truncated_diff += f"\n\n[... diff truncated at {_MAX_DIFF_CHARS} chars ...]"
 
         return template.format(
             enabled_analyses=_build_enabled_analyses(features, static_findings, policy_violations),
+            pr_title=pr_title,
+            pr_description=pr_description,
             diff=truncated_diff,
             static_findings=static_summary,
             policy_violations=policy_summary,
@@ -243,9 +277,18 @@ class OpenAILLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> LLMReviewResult:
         system_prompt = self._load_prompt("system_prompt.txt")
-        user_prompt = self._build_user_prompt(diff, static_findings, policy_violations, features)
+        user_prompt = self._build_user_prompt(
+            diff,
+            static_findings,
+            policy_violations,
+            features,
+            pr_title=pr_title,
+            pr_body=pr_body,
+        )
 
         logger.info("Calling %s for LLM review (features: %s)", self._model, vars(features))
 
@@ -316,6 +359,8 @@ class DatabricksLLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> str:
         template = self._load_prompt("user_prompt_template.txt")
 
@@ -330,12 +375,19 @@ class DatabricksLLMReviewer(ILLMReviewer):
             for v in policy_violations
         ) or "None"
 
+        pr_title = (pr_title or "").strip() or "N/A"
+        pr_description = (pr_body or "").strip() or "No PR description provided."
+        if len(pr_description) > 2000:
+            pr_description = pr_description[:2000] + "\n\n[... description truncated ...]"
+
         truncated_diff = diff[:_MAX_DIFF_CHARS]
         if len(diff) > _MAX_DIFF_CHARS:
             truncated_diff += f"\n\n[... diff truncated at {_MAX_DIFF_CHARS} chars ...]"
 
         return template.format(
             enabled_analyses=_build_enabled_analyses(features, static_findings, policy_violations),
+            pr_title=pr_title,
+            pr_description=pr_description,
             diff=truncated_diff,
             static_findings=static_summary,
             policy_violations=policy_summary,
@@ -348,9 +400,18 @@ class DatabricksLLMReviewer(ILLMReviewer):
         static_findings: List[StaticFinding],
         policy_violations: List[PolicyViolation],
         features: FeatureSet,
+        pr_title: str = "",
+        pr_body: str = "",
     ) -> LLMReviewResult:
         system_prompt = self._load_prompt("system_prompt.txt")
-        user_prompt = self._build_user_prompt(diff, static_findings, policy_violations, features)
+        user_prompt = self._build_user_prompt(
+            diff,
+            static_findings,
+            policy_violations,
+            features,
+            pr_title=pr_title,
+            pr_body=pr_body,
+        )
 
         logger.info("Calling Databricks %s for LLM review (features: %s)", self._model, vars(features))
 
