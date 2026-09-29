@@ -62,6 +62,7 @@ async def lifespan(app: FastAPI):
         "SET" if databricks_configured else "NOT SET",
     )
     if provider == "anthropic" and not anthropic_key_set:
+        print("ANTHROPIC_API_KEY is empty but LLM_PROVIDER=anthropic — LLM calls will fail")
         logger.error("ANTHROPIC_API_KEY is empty but LLM_PROVIDER=anthropic — LLM calls will fail")
     if provider == "openai" and not openai_key_set:
         logger.error("OPENAI_API_KEY is empty but LLM_PROVIDER=openai — LLM calls will fail")
